@@ -44,7 +44,7 @@ def add(title, content):
         'dosubmit': '马上发布'
     }
 
-    result = requests.post(url=url, data=form_data).content.decode()
+    result = requests.post(url=url, data=form_data, verify=False).content.decode()
     print(result)
 
 # add('标题，内容就一点点','我就是内容')

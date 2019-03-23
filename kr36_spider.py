@@ -1,7 +1,7 @@
 '''抓取快讯，发布在xiou网上
 kr36网址：https://36kr.com/newsflashes
-每30Min更新数据库，逻辑如下：爬取２０条快讯，判断id是否在数据库中，没有就添加到数据库，并发表在xiouwang
-
+每分钟更新数据库，逻辑如下：爬取２０条快讯，判断id是否在数据库中，没有就添加到数据库，并发表在xiouwang
+注：使用前确保本地数据库　kr36_db　存在,表名:News,字段id,title
 '''
 
 import requests
@@ -10,13 +10,14 @@ import urllib3
 import time
 from DataTools.tools import MysqlHelper
 from NewsAdd import add
+import schedule
+import time
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 def job():
     # url需要拼接的时间戳
-    print('程序开始－－－')
     time_mark = str(time.time()).replace('.', '')[:14]
 
     #
@@ -44,10 +45,11 @@ def job():
         title = item['title']
         # 快讯描述,也是我们抓取的内容
         description = item['description']
-        print(id, title, description, )
         # 在这里判断是否应该发表文章
         if is_add(id):
             # 发表快讯并加入数据库
+            print('发现新文章')
+            print(id, title, description, )
             add(title, content=description)
             write_data(id, title)
 
@@ -82,3 +84,8 @@ def is_add(id):
 
 
 job()
+print('程序开始－－－')
+schedule.every(1).minutes.do(job)
+while True:
+    schedule.run_pending()
+    time.sleep(1)
